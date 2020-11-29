@@ -65,15 +65,15 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     ekf_.x_ = VectorXd(4);
     ekf_.x_ << 1, 1, 1, 1;
 
-    Eigen::VectorXd x_in;
-    Eigen::MatrixXd P_in;
+    Eigen::VectorXd x_in(4);
+    Eigen::MatrixXd P_in = Eigen::Matrix<double, 4, 4>::Zero();
     Eigen::MatrixXd F_in = Eigen::Matrix<double, 4, 4>::Identity(); // varying but only in two places (dt)
-    Eigen::MatrixXd H_in;
+    Eigen::MatrixXd H_in = Eigen::Matrix<double, 2, 4>::Zero();
     H_in <<
     1, 0, 0, 0,
     0, 1, 0, 0;
     Eigen::MatrixXd R_in; // varying depending on measurement type
-    Eigen::MatrixXd Q_in; // varying depending on dt
+    Eigen::MatrixXd Q_in = Eigen::Matrix<double, 4, 4>::Zero(); // varying depending on dt
 
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
       // TODO: Convert radar from polar to cartesian coordinates 
@@ -81,6 +81,8 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       double r = measurement_pack.raw_measurements_[0];
       double theta = measurement_pack.raw_measurements_[1];
       x_in << r*std::cos(theta), r*std::sin(theta), 0, 0;
+      
+
 
     }
     else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
@@ -88,16 +90,19 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       x_in << measurement_pack.raw_measurements_[0], measurement_pack.raw_measurements_[1], 0, 0;
 
     }
-    P_in <<
-    1, 0, 0, 0,
-    0, 1, 0, 0,
-    0, 0, 1, 0,
-    0, 0, 0, 1;
+    
+      P_in <<
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 999, 0,
+      0, 0, 0, 999;
+
 
     ekf_.Init(x_in, P_in, F_in, H_in, R_in, Q_in);
 
     // done initializing, no need to predict or update
     is_initialized_ = true;
+    previous_timestamp_ = measurement_pack.timestamp_;
     return;
   }
 

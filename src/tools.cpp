@@ -68,13 +68,17 @@ MatrixXd Tools::CalculateJacobian(const VectorXd &x_state)
       return Hj;
    // compute the Jacobian matrix
    Hj = Eigen::Matrix<double, 3, 4>::Zero();
-   Hj(0, 0) = px / std::sqrt(px * px + py * py);
-   Hj(0, 1) = py / std::sqrt(px * px + py * py);
-   Hj(1, 0) = -py / (px * px + py * py);
-   Hj(1, 1) = px / (px * px + py * py);
-   Hj(2, 0) = py * (vx * py - vy * px) / std::pow(px * px + py * py, 1.5);
-   Hj(2, 1) = px * (py * vx - px * vy) / std::pow(px * px + py * py, 1.5);
-   Hj(2, 2) = px / std::sqrt(px * px + py * py);
-   Hj(2, 3) = py / std::sqrt(px * px + py * py);
+   double denSqrt = std::sqrt(px * px + py * py);
+   double den = denSqrt * denSqrt;
+   double denThreeHalves = denSqrt*den;
+  
+   Hj(0, 0) = px / denSqrt;
+   Hj(0, 1) = py / denSqrt;
+   Hj(1, 0) = -py / den;
+   Hj(1, 1) = px / den;
+   Hj(2, 0) = py * (vx * py - vy * px) / denThreeHalves;
+   Hj(2, 1) = px * (vy*px - vx*py)/ denThreeHalves;
+   Hj(2, 2) = px / denSqrt;
+   Hj(2, 3) = py / denSqrt;
    return Hj;
 }
