@@ -81,8 +81,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       double r = measurement_pack.raw_measurements_[0];
       double theta = measurement_pack.raw_measurements_[1];
       x_in << r*std::cos(theta), r*std::sin(theta), 0, 0;
-      
-
 
     }
     else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
